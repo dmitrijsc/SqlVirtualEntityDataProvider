@@ -91,7 +91,7 @@ namespace MarkMpn.Sql4Cds.Engine
             }
 
             // OFFSET
-            if (!String.IsNullOrEmpty(fetch.page) && fetch.page != "1")
+            if (!String.IsNullOrEmpty(fetch.page))
             {
                 var page = Int32.Parse(fetch.page);
                 var pageSize = Int32.Parse(fetch.count);
@@ -1855,6 +1855,25 @@ namespace MarkMpn.Sql4Cds.Engine
             // Recurse into link entities
             foreach (var link in items.OfType<FetchLinkEntityType>())
                 AddOrderBy(link.alias ?? link.name, link.Items, query);
+            
+            if (query.OrderByClause == null)
+            {
+                query.OrderByClause= new OrderByClause();
+                query.OrderByClause.OrderByElements.Add(new ExpressionWithSortOrder
+                {
+                    Expression = new ColumnReferenceExpression
+                    {
+                        MultiPartIdentifier = new MultiPartIdentifier
+                        {
+                            Identifiers =
+                                {
+                                    new Identifier{Value = items.OfType<FetchAttributeType>().First().name }
+                                }
+                        }
+                    },
+                    SortOrder = SortOrder.Ascending
+                });
+            }
         }
 
         private class SimplifyMultiPartIdentifierVisitor : TSqlFragmentVisitor

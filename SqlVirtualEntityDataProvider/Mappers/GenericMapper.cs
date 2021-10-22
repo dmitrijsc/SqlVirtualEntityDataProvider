@@ -111,11 +111,11 @@ namespace MikeFactorial.Xrm.Plugins.DataProviders.Mappers
         public virtual EntityCollection CreateEntities(DataSet dataSet, int pageSize, int pageNumber)
         {
             var collection = new EntityCollection();
-            collection.TotalRecordCount = dataSet.Tables[0].Rows.Count;
-            collection.MoreRecords = (collection.TotalRecordCount > (pageSize * pageNumber)) || pageSize == -1;
-            if(dataSet != null && dataSet.Tables.Count > 0)
+            collection.TotalRecordCount = pageSize * Math.Max(0, (pageNumber - 1)) + dataSet.Tables[0].Rows.Count;
+            collection.MoreRecords = collection.TotalRecordCount > pageSize || pageSize == -1;
+            if (dataSet != null && dataSet.Tables.Count > 0)
             {
-                var rows = (pageSize > -1) ? dataSet.Tables[0].AsEnumerable().Skip(pageSize * (pageNumber - 1)).Take(pageSize) : dataSet.Tables[0].AsEnumerable();
+                var rows = collection.MoreRecords ? dataSet.Tables[0].AsEnumerable().Take(pageSize) : dataSet.Tables[0].AsEnumerable();
                 foreach (DataRow row in rows)
                 {
                     Entity entity = new Entity(context.PluginContext.PrimaryEntityName);

@@ -82,22 +82,28 @@ namespace MikeFactorial.Xrm.Plugins.DataProviders
                     //Store page info before converting
                     int page = -1;
                     int count = -1;
-                    if (!string.IsNullOrEmpty(fetch.page))
+
+                    if (string.IsNullOrEmpty(fetch.page))
                     {
-                        page = Int32.Parse(fetch.page);
-                        fetch.page = string.Empty;
+                        fetch.page = "1";
                     }
 
-                    if (!string.IsNullOrEmpty(fetch.count))
+                    page = Int32.Parse(fetch.page);
+
+                    if (string.IsNullOrEmpty(fetch.count))
                     {
-                        count = Int32.Parse(fetch.count);
-                        fetch.count = string.Empty;
+                        fetch.count = "50";
                     }
+
+                    count = Int32.Parse(fetch.count);
+                    fetch.count = (count + 1).ToString();
 
                     var sql = FetchXml2Sql.Convert(context.Service, metadata, fetch, new FetchXml2SqlOptions { PreserveFetchXmlOperatorsAsFunctions = false }, out _);
 
                     sql = mapper.MapVirtualEntityAttributes(sql);
                     context.Trace($"SQL: {sql}");
+
+
 
                     if (page != -1 && count != -1)
                     {
@@ -107,6 +113,8 @@ namespace MikeFactorial.Xrm.Plugins.DataProviders
                     {
                         collection = this.GetEntitiesFromSql(context, mapper, sql, -1, 1);
                     }
+
+
                 }
                 context.Trace($"Records Returned: {collection.Entities.Count}");
                 context.PluginContext.OutputParameters["BusinessEntityCollection"] = collection;
